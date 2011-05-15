@@ -12,11 +12,10 @@ from gi.repository import Gtk as gtk
 cluttergtk.init(0, "")
 
 from pointsons.ui.osc_control import OSCControl
+from pointsons.ui.configuration import PSUIConfig
 
 logger = logging.getLogger('pointsons')
 
-class PSUIConfig(object):
-    pass
 
 class BowlConfigUI(object):
     def __init__(self):

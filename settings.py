@@ -12,6 +12,10 @@ config(
 DEBUG = True
 
 
+SERVER_OSC_PORT = 56418
+KINECT_OSC_PORT = 56419
+
+
 
 
 

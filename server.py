@@ -17,7 +17,8 @@ else:
     pre = post = None
 
 hook(
-    PointSonsOSCInterface(),
+    PointSonsOSCInterface(port=settings.SERVER_OSC_PORT,
+                          notify_ports=[settings.KINECT_OSC_PORT]),
     MemorizeConfig('config.ps'),
     AutoRestart(),
 )
