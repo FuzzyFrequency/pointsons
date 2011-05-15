@@ -6,9 +6,9 @@ from mididings.extra import MemorizeScene
 from mididings.extra.inotify import AutoRestart
 
 import settings
-from pointsons.osc import PointSonsOSCInterface
-from pointsons.scenes import ps_scenes
-from pointsons.control import ps_control
+from pointsons.server.osc import PointSonsOSCInterface
+from pointsons.server.scenes import ps_scenes
+from pointsons.server.control import ps_control
 
 if settings.DEBUG:
     pre = Print('input', portnames='in') >> ~Filter(PROGRAM)
