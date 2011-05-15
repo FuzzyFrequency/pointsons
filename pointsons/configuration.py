@@ -1,3 +1,15 @@
+# -*- coding: utf-8 -*-
+#
+# Pointsons
+#
+# Copyright (C) 2011 Guillaume Libersat <guillaume@fuzzyfrequency.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+
 import pickle
 
 FILENAME = 'save.pss'
@@ -24,8 +36,6 @@ class Configuration(object):
     RatioArmLengthFromHeight = 75 # pourcentage définissant la longueur d'un bras tendu (sans la main) à partir de la hauteur d'une personne
     RatioHeightWidthMin = 50 # pourcentage indiquant la largeur minimum du tronc d'une personne à partir de sa taille (utile quand des entités passent entre la caméra et l'utilisateur provoquant une largeur de l'utilisateur de 0)
     UserProfile = "TwoHands" # profil de l'utilisateur pour utiliser une ou deux mains (autres profils disponibles : RightHand et LeftHand)
-
-    
 
     def save(self):
         thefile = open(FILENAME, 'wb')

@@ -2,10 +2,10 @@
 
 from mididings import hook, run
 from mididings import Filter, PROGRAM, Print
-from mididings.extra import MemorizeScene
 from mididings.extra.inotify import AutoRestart
 
 import settings
+from pointsons.server.memorize import MemorizeConfig
 from pointsons.server.osc import PointSonsOSCInterface
 from pointsons.server.scenes import ps_scenes
 from pointsons.server.control import ps_control
@@ -18,7 +18,7 @@ else:
 
 hook(
     PointSonsOSCInterface(),
-    MemorizeScene('scene.txt'),
+    MemorizeConfig('config.ps'),
     AutoRestart(),
 )
 
