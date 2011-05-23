@@ -18,7 +18,8 @@ else:
 
 hook(
     PointSonsOSCInterface(port=settings.SERVER_OSC_PORT,
-                          notify_ports=[settings.KINECT_OSC_PORT]),
+                          notify_ports=[settings.KINECT_OSC_PORT,
+                                        settings.UI_OSC_PORT]),
     MemorizeConfig('config.ps'),
     AutoRestart(),
 )
@@ -27,5 +28,3 @@ run(scenes=ps_scenes,
     control=ps_control,
     pre=pre,
     post=post)
-
-

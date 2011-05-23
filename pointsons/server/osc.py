@@ -29,18 +29,10 @@ class PointSonsOSCInterface(OSCInterface):
     def gesture(self, path, probability):
         print "got gesture", path, probability
 
-def send_to_kinect(path, *arguments):
-    """
-    Send an OSC message to the kinect software
-    The path is a tuple, made of :
-    (osc_path, osc_format)
-    Paths can be found in constants.py.
-    """
-    liblo.send(settings.KINECT_OSC_PORT,
-               path[0],
-               path[1],
-               *arguments)
-    
+    @make_method('/pointsons/area', 'iii')
+    def area(self, path, args):
+        print "area", args[0], args[1], args[2]
+
 
 
 

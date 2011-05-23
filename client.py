@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import logging
 from logging import Handler
 
@@ -11,8 +11,10 @@ from gi.repository import Gtk as gtk
 # Init Clutter
 cluttergtk.init(0, "")
 
+import settings
+
 from pointsons.ui.osc_control import OSCControl
-from pointsons.ui.configuration import PSUIConfig
+from pointsons.ui.configuration import UIConfiguration
 
 logger = logging.getLogger('pointsons')
 
@@ -34,10 +36,22 @@ class PSLogHandler(Handler):
     def emit(self, aRecord):
         print aRecord
 
+class AreaCallbacksMixin(object):
+    """
+    Callbacks for the Area Popup
+    """
+    def on_area_x_value_changed(self, aWidget):
+        self.config.area.x = aWidget.value
 
-class PSUI(object):
+    def on_area_z_value_changed(self, aWidget):
+        self.config.area.z = aWidget.value
+
+    def on_area_radius_value_changed(self, aWidget):
+        self.config.area.radius = aWidget.value
+    
+class PSUI(AreaCallbacksMixin):
     def __init__(self):
-        self.config = PSUIConfig()
+        self.config = UIConfiguration(self)
         self.log_handler = PSLogHandler()
         logger.addHandler(self.log_handler)
         
@@ -105,7 +119,10 @@ class PSUI(object):
         
     def main(self):
         # Run an OSC connection to the server
-        self.osc_control = OSCControl(self, 56418, 56419)
+        self.osc_control = OSCControl(self,
+                                      settings.SERVER_OSC_PORT,
+                                      settings.UI_OSC_PORT)
+        
         gobject.idle_add(self.osc_control.recv, 10)
 
         # Display everything !
@@ -113,7 +130,16 @@ class PSUI(object):
         
         # Gtk main loop
         gtk.main()
-        
+
+
+    #-- Callback --#
+    def on_bowl_add_activate(self, aWidget):
+        print "actiavted"
+
+    def on_configure_area_activate(self, aWidget):
+        config_win = self.builder.get_object('area_window')
+        print "dialog", config_win.run()
+        config_win.hide()
 
 if __name__ == "__main__":
     psui = PSUI()

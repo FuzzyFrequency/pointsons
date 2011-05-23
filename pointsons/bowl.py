@@ -10,7 +10,10 @@
 # (at your option) any later version.
 #
 
-class Bowl(object):
+from .kinect import KinectParameter
+from .osc import ServerParameter
+
+class Bowl(KinectParameter, ServerParameter):
     """
     Un bol est décrit par les éléments suivants :
     

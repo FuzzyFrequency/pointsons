@@ -20,7 +20,7 @@ import sys as _sys
 class MemorizeConfig(object):
     def __init__(self, config_path):
         self.config_path = config_path
-        
+
     def on_start(self):
         try:
             self.configuration = ServerConfiguration.load(self.config_path)
@@ -30,6 +30,10 @@ class MemorizeConfig(object):
 
         # Reconfigure the Kinect with the previous state
         self.configuration.setup_kinect()
+
+        # Build scenes from configuration and set them
+        scene = self.configuration.to_scene()
+        #_engine.switch_scene(scene)
 
     def on_exit(self):
         self.configuration.save()

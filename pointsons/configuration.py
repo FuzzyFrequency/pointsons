@@ -9,13 +9,18 @@
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
+import yaml
+try:
+    from yaml import CLoader as Loader
+    from yaml import CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
 
-import pickle
-
+from .kinect import KinectParameter
 from .area import Area
 from .camera import Camera
 
-class Configuration(object):
+class Configuration(KinectParameter):
     """
     A generic configuration system for the pointsons installation
     """
@@ -24,7 +29,7 @@ class Configuration(object):
     
     label = u"Sans nom"
     chords = []
-    bowls = []
+    bowls = {}
     camera = Camera()
     area = Area()
 
@@ -46,13 +51,30 @@ class Configuration(object):
 
     def save(self):
         thefile = open(self.config_path, 'wb')
-        pickle.dump(self, thefile)
+        data = yaml.dump(self, Dumper=Dumper)
+        thefile.write(data)
         thefile.close()
 
     @staticmethod
     def load(config_path):
         thefile = open(config_path, 'rb')
-        return pickle.load(thefile)
+        return yaml.load(thefile)
 
-
-    
+    def to_kinect(self):
+        self._osc_to_kinect('/config',
+                            self.ratioEyeBodySize,
+                            self.ratioCylinderRayFromShouldersSpace,
+                            self.proximityCenterForHeadCalculation,
+                            self.armBlobNumbermin,
+                            self.croppingXMin,
+                            self.croppingXMax,
+                            self.croppingYMin,
+                            self.croppingYMax,
+                            self.lowPassFilter,
+                            self.eyeDepthOffset,
+                            self.bodyDepthOffset,
+                            self.armSquaredDistanceThreshold,
+                            self.ratioArmLengthFromHeight,
+                            self.ratioHeightWidthMin,
+                            self.userProfile
+                            )
