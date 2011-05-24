@@ -39,9 +39,13 @@ class PointSonsOSCInterface(OSCInterface):
     def the_test(self, path, args):
         print "test", path, args
 
-    @make_method('/probability/sphere', 'sff')
+    @make_method('/probability/sphere', 'siff')
     def sphere(self, path, args):
-        print "got sphere : %s '%s', %f, %f" % (path, args[0], args[1], args[1])
+        """
+        0 -> Main droite
+        1 -> Main Gauche
+        """
+        print "got sphere : %s '%s', %d, %f, %f" % (path, args[0], args[1], args[2], args[3])
         # engine._TheEngine().process(NoteOnEvent(engine.in_ports()[0], 1, note_number('C2'), 100))
 
     @make_method('/probability/gesture', 'sff')
