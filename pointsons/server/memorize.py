@@ -14,6 +14,7 @@ import mididings.setup as _setup
 import mididings.engine as _engine
 
 from configuration import ServerConfiguration
+from ..configuration import Configurations
 
 import sys as _sys
 
@@ -21,20 +22,24 @@ class MemorizeConfig(object):
     def __init__(self, config_path):
         self.config_path = config_path
 
+        self.configs = Configurations()
+
     def on_start(self):
         try:
-            self.configuration = ServerConfiguration.load(self.config_path)
+            configuration = ServerConfiguration.load(self.config_path)
         except IOError:
             # couldn't open configuration file, start with a fresh config
-            self.configuration = ServerConfiguration(self.config_path)
+            configuration = ServerConfiguration(self.config_path)
+
+        self.configs.set_current(configuration)
 
         # Reconfigure the Kinect with the previous state
-        self.configuration.setup_kinect()
+        self.configs.current.setup_kinect()
 
         # Build scenes from configuration and set them
-        scene = self.configuration.to_scene()
+        scene = self.configs.current.to_scene()
         #_engine.switch_scene(scene)
 
     def on_exit(self):
-        self.configuration.save()
+        self.configs.current.save()
             

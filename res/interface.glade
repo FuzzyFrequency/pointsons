@@ -185,10 +185,30 @@
     <property name="page_increment">10</property>
     <signal name="value-changed" handler="on_area_z_value_changed" swapped="no"/>
   </object>
+  <object class="GtkAdjustment" id="bolw_add_adj_x">
+    <property name="upper">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
   <object class="GtkAction" id="bowl_add">
     <property name="label" translatable="yes">Ajouter un bol</property>
     <property name="icon_name">list-add</property>
     <signal name="activate" handler="on_bowl_add_activate" swapped="no"/>
+  </object>
+  <object class="GtkAdjustment" id="bowl_add_adj_radius">
+    <property name="upper">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="bowl_add_adj_y">
+    <property name="upper">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="bowl_add_adj_z">
+    <property name="upper">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
   </object>
   <object class="GtkAction" id="configure_area">
     <property name="label" translatable="yes">Configurer la Zone</property>
@@ -196,7 +216,6 @@
     <signal name="activate" handler="on_configure_area_activate" swapped="no"/>
   </object>
   <object class="GtkDialog" id="bowl_add_window">
-    <property name="width_request">450</property>
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Configurer un Bol</property>
@@ -327,7 +346,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkSpinButton" id="spinbutton1">
+                      <object class="GtkSpinButton" id="bol_add_x">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">•</property>
@@ -336,6 +355,7 @@
                         <property name="secondary_icon_activatable">False</property>
                         <property name="primary_icon_sensitive">True</property>
                         <property name="secondary_icon_sensitive">True</property>
+                        <property name="adjustment">bolw_add_adj_x</property>
                         <property name="numeric">True</property>
                       </object>
                       <packing>
@@ -344,7 +364,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSpinButton" id="spinbutton2">
+                      <object class="GtkSpinButton" id="bol_add_">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">•</property>
@@ -353,6 +373,7 @@
                         <property name="secondary_icon_activatable">False</property>
                         <property name="primary_icon_sensitive">True</property>
                         <property name="secondary_icon_sensitive">True</property>
+                        <property name="adjustment">bowl_add_adj_y</property>
                         <property name="numeric">True</property>
                       </object>
                       <packing>
@@ -370,6 +391,7 @@
                         <property name="secondary_icon_activatable">False</property>
                         <property name="primary_icon_sensitive">True</property>
                         <property name="secondary_icon_sensitive">True</property>
+                        <property name="adjustment">bowl_add_adj_z</property>
                         <property name="numeric">True</property>
                       </object>
                       <packing>
@@ -397,6 +419,7 @@
                         <property name="secondary_icon_activatable">False</property>
                         <property name="primary_icon_sensitive">True</property>
                         <property name="secondary_icon_sensitive">True</property>
+                        <property name="adjustment">bowl_add_adj_radius</property>
                         <property name="numeric">True</property>
                       </object>
                       <packing>
@@ -430,7 +453,7 @@
     </child>
     <action-widgets>
       <action-widget response="0">button7</action-widget>
-      <action-widget response="0">close1</action-widget>
+      <action-widget response="1">close1</action-widget>
     </action-widgets>
   </object>
   <object class="GtkDialog" id="bowl_window">
@@ -866,6 +889,7 @@ audio-volume-medium</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="related_action">configure_area</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>

@@ -16,11 +16,11 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
-from .kinect import KinectParameter
-from .area import Area
-from .camera import Camera
+from pointsons import logger
 
-class Configuration(KinectParameter):
+from .utils import Borg, Observable
+
+class Configuration(Observable):
     """
     A generic configuration system for the pointsons installation
     """
@@ -30,8 +30,8 @@ class Configuration(KinectParameter):
     label = u"Sans nom"
     chords = []
     bowls = {}
-    camera = Camera()
-    area = Area()
+    camera = None
+    area = None
 
     ratioEyeBodySize = 94 # un pourcentage définissant la hauteur des yeux par rapport à la hauteur totale d'une personne
     ratioCylinderRayFromShouldersSpace = 120 # pourcentage par rapport au tronc de l'utilisateur en dehors duquel les membres sont pris en compte
@@ -41,7 +41,7 @@ class Configuration(KinectParameter):
     croppingXMax = 640 # abscisse maximale de l'image jusque laquelle prendre en compte les pixels
     croppingYMin = 0 # ordonnée minimale de l'image à partir de laquelle prendre en compte les pixels
     croppingYMax = 480 # ordonnée maximale de l'image jusque laquelle prendre en compte les pixels
-    lowPassFilter = False # activer/désactiver les filtres passe-bas
+    lowPassFilter = 0 # activer/désactiver les filtres passe-bas
     eyeDepthOffset = 30 # décalage des yeux vers l'intérieur de la tête (en mm,pour atténuer la différence d'œil directeur chez les utilisateurs)
     bodyDepthOffset = 100 # décalage de la position de l'utilisateur pour compenser la prise en compte des pixels de surface (en mm)
     armSquaredDistanceThreshold = 900 # seuil de séparation des bras sur des pixels voisins lorsque les bras sont superposés dans l'image
@@ -58,23 +58,26 @@ class Configuration(KinectParameter):
     @staticmethod
     def load(config_path):
         thefile = open(config_path, 'rb')
-        return yaml.load(thefile)
+        config = yaml.load(thefile)
 
-    def to_kinect(self):
-        self._osc_to_kinect('/config',
-                            self.ratioEyeBodySize,
-                            self.ratioCylinderRayFromShouldersSpace,
-                            self.proximityCenterForHeadCalculation,
-                            self.armBlobNumbermin,
-                            self.croppingXMin,
-                            self.croppingXMax,
-                            self.croppingYMin,
-                            self.croppingYMax,
-                            self.lowPassFilter,
-                            self.eyeDepthOffset,
-                            self.bodyDepthOffset,
-                            self.armSquaredDistanceThreshold,
-                            self.ratioArmLengthFromHeight,
-                            self.ratioHeightWidthMin,
-                            self.userProfile
-                            )
+        # FIXME: Monkey patching
+        #if config.camera is None:
+        #    config.camera = Camera()
+        
+        #if config.area is None:
+        #    config.area = Area()
+
+        return config
+
+class Configurations(Borg):
+    current = None
+
+    def load_configuration(self, config_path):
+        self.current = Configuration.load(config_path)
+
+    def save(self, config_path):
+        self.current.save(config_path)
+
+    def set_current(self, aConfiguration):
+        self.current = aConfiguration
+        logger.info("Switching to config '%s'" % aConfiguration.label)

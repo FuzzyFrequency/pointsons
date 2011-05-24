@@ -10,10 +10,9 @@
 # (at your option) any later version.
 #
 
-from .kinect import KinectParameter
-from .osc import ServerParameter
+from .utils import Observable
 
-class Bowl(KinectParameter, ServerParameter):
+class AbstractBowl(Observable):
     """
     Un bol est décrit par les éléments suivants :
     
@@ -30,4 +29,4 @@ class Bowl(KinectParameter, ServerParameter):
     note = None
     position = (0, 0, 0) # mm, from reference point
     radius = 0 # mm
-    #velocity = 127
+

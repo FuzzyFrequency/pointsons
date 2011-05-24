@@ -20,18 +20,38 @@ from liblo import make_method
 import settings
 
 class PointSonsOSCInterface(OSCInterface):
-    @make_method('/pointsons/sphere', 'f')
-    def sphere(self, path, probability):
-        print "got sphere", path, probability
-        engine._TheEngine().process(NoteOnEvent(engine.in_ports()[0], 1, note_number('C2'), 100))
-
-    @make_method('/pointsons/gesture', 'f')
-    def gesture(self, path, probability):
-        print "got gesture", path, probability
-
+    #-- From UI Side
     @make_method('/pointsons/area', 'iii')
     def area(self, path, args):
         print "area", args[0], args[1], args[2]
+
+    @make_method('/pointsons/bowl/add', 'siiiii')
+    def bowl_add(self, path, args):
+        print "add bowl", args[0]
+
+    @make_method('/pointsons/bowl/del', 's')
+    def bowl_del(self, path, args):
+        print "del bowl", args[0]
+
+
+    #-- From Kinect Side
+    @make_method('/test', 'si')
+    def the_test(self, path, args):
+        print "test", path, args
+
+    @make_method('/probability/sphere', 'sff')
+    def sphere(self, path, args):
+        print "got sphere : %s '%s', %f, %f" % (path, args[0], args[1], args[1])
+        engine._TheEngine().process(NoteOnEvent(engine.in_ports()[0], 1, note_number('C2'), 100))
+
+    @make_method('/probability/gesture', 'sff')
+    def gesture(self, path, args):
+        print "got gesture", path, args[0]
+
+    @make_method('/sphere/stop', 'sf')
+    def sphere_stop(self, path, args):
+        print "stop sphere", args[0]
+
 
 
 

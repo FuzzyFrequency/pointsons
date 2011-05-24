@@ -10,6 +10,7 @@ class KinectParameter(object):
         (osc_path, osc_format)
         Paths can be found in constants.py.
         """
+        print "Sending OSC:", path, arguments
         liblo.send(settings.KINECT_OSC_PORT,
                    path,
                    *arguments)

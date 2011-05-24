@@ -16,7 +16,9 @@ import settings
 from pointsons.ui.osc_control import OSCControl
 from pointsons.ui.configuration import UIConfiguration
 
-logger = logging.getLogger('pointsons')
+from pointsons.bowl import Bowl
+
+from pointsons import logger
 
 
 class BowlConfigUI(object):
@@ -24,10 +26,33 @@ class BowlConfigUI(object):
         builder = gtk.Builder()
         builder.add_from_file('res/interface.glade')
 
-        self.window = builder.get_object('bowl_window')
+        self.dialog = builder.get_object('bowl_window')
 
     def run(self):
-        self.window.show_all()
+        r = self.dialog.run()
+        print r
+
+        r.destroy()
+
+        self.dialog.destroy()
+
+
+class BowlAddUI(object):
+    def __init__(self):
+        builder = gtk.Builder()
+        builder.add_from_file('res/interface.glade')
+
+        self.dialog = builder.get_object('bowl_add_window')
+
+    def run(self):
+        r = self.dialog.run()
+
+        if r:
+            bowl = Bowl()
+            print bowl
+
+        self.dialog.destroy()
+
 
 class PSLogHandler(Handler):
     def __init__(self):
@@ -41,14 +66,14 @@ class AreaCallbacksMixin(object):
     Callbacks for the Area Popup
     """
     def on_area_x_value_changed(self, aWidget):
-        self.config.area.x = aWidget.value
+        self.config.area.x = int(aWidget.get_value())
 
     def on_area_z_value_changed(self, aWidget):
-        self.config.area.z = aWidget.value
+        self.config.area.z = int(aWidget.get_value())
 
     def on_area_radius_value_changed(self, aWidget):
-        self.config.area.radius = aWidget.value
-    
+        self.config.area.radius = int(aWidget.get_value())
+
 class PSUI(AreaCallbacksMixin):
     def __init__(self):
         self.config = UIConfiguration(self)
@@ -134,12 +159,14 @@ class PSUI(AreaCallbacksMixin):
 
     #-- Callback --#
     def on_bowl_add_activate(self, aWidget):
-        print "actiavted"
+        dialog = BowlAddUI()
+        dialog.run()
 
     def on_configure_area_activate(self, aWidget):
         config_win = self.builder.get_object('area_window')
         print "dialog", config_win.run()
         config_win.hide()
+
 
 if __name__ == "__main__":
     psui = PSUI()

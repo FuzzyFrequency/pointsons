@@ -9,9 +9,10 @@
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
-from .kinect import KinectParameter
 
-class Camera(KinectParameter):
+from .utils import Observable
+
+class AbstractCamera(Observable):
     """
     La caméra doit absolument être configurée dès le départ du
     programme. Sa configuration nécessite 4 paramètres :
@@ -25,12 +26,6 @@ class Camera(KinectParameter):
     position = (0, 0, 0) # (x, y, y) : mm, from reference point
     orientation = 0 # from -27 (looking at the sky) to +27 (looking at the floor)
 
-    def to_kinect(self):
-        self._osc_to_kinect('/camera',
-                            self.position[0],
-                            self.position[1],
-                            self.position[2],
-                            self.orientation)
 
         
 
