@@ -17,7 +17,7 @@ class Bowl(AbstractBowl, KinectParameter):
     def to_kinect(self):
         self._osc_to_kinect('/sphere',
                             self.note.label,
-                            1, # Both hands
+                            self.hands,
                             self.position[0],
                             self.position[1],
                             self.position[2],

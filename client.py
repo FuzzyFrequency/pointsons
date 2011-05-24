@@ -16,7 +16,9 @@ import settings
 from pointsons.ui.osc_control import OSCControl
 from pointsons.ui.configuration import UIConfiguration
 
-from pointsons.bowl import Bowl
+from pointsons.configuration import Configurations
+
+from pointsons.ui.bowl import Bowl
 
 from pointsons import logger
 
@@ -66,17 +68,20 @@ class AreaCallbacksMixin(object):
     Callbacks for the Area Popup
     """
     def on_area_x_value_changed(self, aWidget):
-        self.config.area.x = int(aWidget.get_value())
+        self.configs.current.area.x = int(aWidget.get_value())
+        print self.configs.current.area
 
     def on_area_z_value_changed(self, aWidget):
-        self.config.area.z = int(aWidget.get_value())
+        self.configs.current.area.z = int(aWidget.get_value())
 
     def on_area_radius_value_changed(self, aWidget):
-        self.config.area.radius = int(aWidget.get_value())
+        self.configs.current.area.radius = int(aWidget.get_value())
 
 class PSUI(AreaCallbacksMixin):
     def __init__(self):
-        self.config = UIConfiguration(self)
+        self.configs = Configurations()
+        self.configs.set_current(UIConfiguration(self))
+
         self.log_handler = PSLogHandler()
         logger.addHandler(self.log_handler)
         

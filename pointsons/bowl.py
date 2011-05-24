@@ -29,4 +29,5 @@ class AbstractBowl(Observable):
     note = None
     position = (0, 0, 0) # mm, from reference point
     radius = 0 # mm
+    hands = 1 # Both hands
 

@@ -7,7 +7,7 @@ class Borg:
          self.__dict__ = self.__shared_state
 
 
-class Observable:
+class Observable(object):
     def __setattr__(self, field_name, aValue):
         """
         On value change, calls a callback named after the field name.
