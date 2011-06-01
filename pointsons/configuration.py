@@ -30,6 +30,7 @@ class Configuration(Observable):
     label = u"Sans nom"
     chords = []
     bowls = {}
+    gestures = {}
     camera = None
     area = None
 

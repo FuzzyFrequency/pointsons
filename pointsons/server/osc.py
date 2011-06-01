@@ -65,9 +65,13 @@ class PointSonsOSCInterface(OSCInterface):
         
             engine._TheEngine().process(NoteOnEvent(engine.in_ports()[0], 1, note_number(note_name), 127))
 
-    @make_method('/probability/gesture', 'siff')
-    def gesture(self, path, args):
-        print "got gesture : %s '%s', %d, %f, %f" % (path, args[0], args[1], args[2], args[3])
+    @make_method('/probability/gesture', 'sifffff')
+    def one_hand_gesture(self, path, args):
+        print "got one hand gesture", path, args
+
+    @make_method('/probability/gesture', 'siffffffffff')
+    def two_hands_gesture(self, path, args):
+        print "got two hands gesture", path, args
 
     @make_method('/sphere/stop', 'sf')
     def sphere_stop(self, path, args):

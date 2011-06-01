@@ -34,6 +34,10 @@ class ServerConfiguration(Configuration, KinectParameter):
         for bowl in self.bowls:
             bowl.to_kinect()
 
+        # Gestures
+        for gesture in self.gestures:
+            gesture.to_kinect()
+
         # Area
         self.area.to_kinect()
 
