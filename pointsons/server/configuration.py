@@ -17,25 +17,26 @@ class ServerConfiguration(Configuration, KinectParameter):
         # Camera
         self.camera.to_kinect()
 
-        # Area
-        self.area.to_kinect()
+        # # FIXME: Need a way to delete all bowls
 
-        # FIXME: Need a way to delete all bowls
-
-        from .bowl import Bowl
-        from ..note import Note
-        b = Bowl()
-        b.position = (10, 20, 30)
-        b.radius = 10
-        n = Note()
-        n.label = "c#2"
-        b.note = n
+        # from .bowl import Bowl
+        # from ..note import Note
+        # b = Bowl()
+        # b.position = (0, 1000, 0)
+        # b.radius = 500
+        # n = Note()
+        # n.label = "c#2"
+        # b.note = n
         
-        self.bowls = [b]
+        # self.bowls = [b]
 
         # Bowls
         for bowl in self.bowls:
             bowl.to_kinect()
+
+        # Area
+        self.area.to_kinect()
+
 
     def to_scene(self):
         return {
@@ -61,3 +62,7 @@ class ServerConfiguration(Configuration, KinectParameter):
                             self.userProfile
                             )
 
+        self._osc_to_kinect('/minproba',
+                            self.minProba)
+
+                            

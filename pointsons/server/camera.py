@@ -19,7 +19,7 @@ class Camera(AbstractCamera, KinectParameter):
                             self.position[0],
                             self.position[1],
                             self.position[2],
-                            self.orientation)
+                            self.angle)
 
 
 

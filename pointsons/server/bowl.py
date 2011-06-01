@@ -10,6 +10,10 @@
 # (at your option) any later version.
 #
 
+import mididings.engine as engine
+from mididings.event import NoteOnEvent, NoteOffEvent
+from mididings.util import note_number
+
 from ..bowl import AbstractBowl
 from .kinect import KinectParameter
 
@@ -22,6 +26,12 @@ class Bowl(AbstractBowl, KinectParameter):
                             self.position[1],
                             self.position[2],
                             self.radius)
+
+    def trigger(self):
+        engine._TheEngine().process(NoteOnEvent(engine.in_ports()[0],
+                                                1,
+                                                note_number(self.note.label),
+                                                127))
 
 
 

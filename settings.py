@@ -11,12 +11,15 @@ config(
 
 DEBUG = True
 
-
+# Servers config
 UI_OSC_PORT = 56420
 SERVER_OSC_PORT = 56418
-KINECT_OSC_PORT = ('134.206.17.236', 56419)
+KINECT_OSC_PORT = ('fresnoy.local', 56419)
 
-
-
+# Musical config
+MIDI_HAMMER_CHANNEL = 1
+MIDI_DAMPER_CHANNEL = 2
+BOWL_LOWER = 'c2'
+BOWL_UPPER = 'b3'
 
 

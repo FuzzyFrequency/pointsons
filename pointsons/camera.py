@@ -24,7 +24,7 @@ class AbstractCamera(Observable):
     vers le haut à 27 si elle regarde vers le bas).
     """
     position = (0, 0, 0) # (x, y, y) : mm, from reference point
-    orientation = 0 # from -27 (looking at the sky) to +27 (looking at the floor)
+    angle = 0 # from -27 (looking at the sky) to +27 (looking at the floor)
 
 
         

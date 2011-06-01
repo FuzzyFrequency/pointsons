@@ -19,6 +19,8 @@ from liblo import make_method
 
 import settings
 
+from ..configuration import Configurations
+
 class PointSonsOSCInterface(OSCInterface):
     #-- From UI Side
     @make_method('/pointsons/area', 'iii')
@@ -35,6 +37,11 @@ class PointSonsOSCInterface(OSCInterface):
 
 
     #-- From Kinect Side
+    @make_method('/kinect_reset', '')
+    def kinect_reset(self, path, args):
+        configs = Configurations()
+        configs.current.setup_kinect()
+
     @make_method('/test', 'si')
     def the_test(self, path, args):
         print "test", path, args
@@ -45,18 +52,47 @@ class PointSonsOSCInterface(OSCInterface):
         0 -> Main droite
         1 -> Main Gauche
         """
-        print "got sphere : %s '%s', %d, %f, %f" % (path, args[0], args[1], args[2], args[3])
-        # engine._TheEngine().process(NoteOnEvent(engine.in_ports()[0], 1, note_number('C2'), 100))
+        note_name = args[0]
+        hands = args[1]
+        probability = args[2]
+        force = args[3]
+        if probability > 0.5:
+            print "got sphere : %s '%s', %d, %f, %f" % (path, 
+                                                        note_name, 
+                                                        hands, 
+                                                        probability,
+                                                        force)
+        
+            engine._TheEngine().process(NoteOnEvent(engine.in_ports()[0], 1, note_number(note_name), 127))
 
-    @make_method('/probability/gesture', 'sff')
+    @make_method('/probability/gesture', 'siff')
     def gesture(self, path, args):
-        print "got gesture", path, args[0]
+        print "got gesture : %s '%s', %d, %f, %f" % (path, args[0], args[1], args[2], args[3])
 
     @make_method('/sphere/stop', 'sf')
     def sphere_stop(self, path, args):
         print "stop sphere", args[0]
 
+    @make_method('/stopall', '')
+    def stopall(self, path, args):
+        print "stopall"
 
+    @make_method('/pointing/rh', 'sf')
+    def right_hand_pointing(self, path, args):
+        note_name = args[0]
+        p = args[1]
+        print "in !", args
+        if p < 1:
+            engine._TheEngine().process(NoteOffEvent(engine.in_ports()[0], 1, note_number(note_name), 127))
+        else:
+            engine._TheEngine().process(NoteOnEvent(engine.in_ports()[0], 1, note_number(note_name), 127))
+        # print "right hand pointing", path, args
 
+    @make_method('/pointing/lh', 'sf')
+    def left_hand_pointing(self, path, args):
+        print "left hand pointing", path, args
 
+    @make_method('/activeuser', 'i')
+    def activeuser(self, path, args):
+        print "active user", args
 

@@ -24,6 +24,10 @@ class MemorizeConfig(object):
 
         self.configs = Configurations()
 
+    def test_bowls(self):
+        for bowl in self.configs.current.bowls:
+            bowl.trigger()
+
     def on_start(self):
         try:
             configuration = ServerConfiguration.load(self.config_path)
@@ -33,8 +37,11 @@ class MemorizeConfig(object):
 
         self.configs.set_current(configuration)
 
-        # Reconfigure the Kinect with the previous state
+        # # Reconfigure the Kinect with the previous state
         self.configs.current.setup_kinect()
+
+        # # Test bowls
+        # self.test_bowls()
 
         # Build scenes from configuration and set them
         scene = self.configs.current.to_scene()

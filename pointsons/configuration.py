@@ -49,6 +49,8 @@ class Configuration(Observable):
     ratioHeightWidthMin = 50 # pourcentage indiquant la largeur minimum du tronc d'une personne à partir de sa taille (utile quand des entités passent entre la caméra et l'utilisateur provoquant une largeur de l'utilisateur de 0)
     userProfile = "TwoHands" # profil de l'utilisateur pour utiliser une ou deux mains (autres profils disponibles : RightHand et LeftHand)
 
+    minProba = 0.8 # Proba minimale avant déclenchement d'un bol
+
     def save(self):
         thefile = open(self.config_path, 'wb')
         data = yaml.dump(self, Dumper=Dumper)
@@ -59,6 +61,8 @@ class Configuration(Observable):
     def load(config_path):
         thefile = open(config_path, 'rb')
         config = yaml.load(thefile)
+
+        # config.camera.position = (0, 1000, 100)
 
         # FIXME: Monkey patching
         #if config.camera is None:

@@ -2,6 +2,7 @@
 
 from mididings import hook, run
 from mididings import Filter, PROGRAM, Print
+from mididings.units.filters import KeyFilter
 from mididings.extra.inotify import AutoRestart
 
 import settings
@@ -10,9 +11,14 @@ from pointsons.server.osc import PointSonsOSCInterface
 from pointsons.server.scenes import ps_scenes
 from pointsons.server.control import ps_control
 
+
+# Filter out notes not in device range
+note_range_filter = KeyFilter(settings.BOWL_LOWER, settings.BOWL_UPPER)
+post = note_range_filter
+
 if settings.DEBUG:
-    pre = Print('input', portnames='in') >> ~Filter(PROGRAM)
-    post = Print('output', portnames='out')
+    pre = Print('input', portnames='in')
+    post = post >> Print('output', portnames='out')
 else:
     pre = post = None
 
