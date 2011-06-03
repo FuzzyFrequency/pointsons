@@ -1,27 +1,31 @@
+# -*- coding: utf-8 -*-
+#
+# Pointsons
+#
+# Copyright (C) 2011 Guillaume Libersat <guillaume@fuzzyfrequency.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
 from threading import Timer
-import time
-import math
 import copy
+import math
+import time
 
+import mididings.engine as engine
+from mididings import KeyFilter, Discard, Scene, Filter, Channel, Transpose, Process, Call, Pass
 # Constants
 from mididings import NOTEON, NOTEOFF, AFTERTOUCH, CTRL, PITCHBEND
 # Filter
-from mididings import KeyFilter, Discard
-from mididings.patch import Patch
-# Units
 from mididings.units.filters import CtrlFilter, ChannelFilter
+# Events
 from mididings.event import NoteOnEvent, NoteOffEvent
-from mididings import Scene, Filter, Channel, Transpose, NoteOn, NoteOff, Process, Call, Generator, Pass
-from mididings.util import _NOTE_NAMES, note_number
-from mididings.extra.harmonizer import Harmonize, _Harmonizer
-
-import mididings.engine as engine
-
-from ..constants import *
-
-import mididings.util
+from mididings.util import note_number
 
 import settings
+from ..constants import *
 
 # Output routing
 to_dampers = Channel(settings.MIDI_DAMPER_CHANNEL)
@@ -121,7 +125,7 @@ def schedule_glissando(ev):
     velocity = ev.value
 
     scale = [0, 2, 4, 5, 7, 9, 11]
-    note_range = range(mididings.util.note_number('c2'), mididings.util.note_number('c4'))
+    note_range = range(note_number('c2'), note_number('c4'))
 
     lower_normal = [note_range[offset] for offset in scale]
     upper_normal = [note_range[offset+12] for offset in scale]

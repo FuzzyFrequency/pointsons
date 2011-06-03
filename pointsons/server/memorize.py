@@ -9,14 +9,8 @@
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
-
-import mididings.setup as _setup
-import mididings.engine as _engine
-
-from configuration import ServerConfiguration
 from ..configuration import Configurations
-
-import sys as _sys
+from .configuration import ServerConfiguration
 
 class MemorizeConfig(object):
     def __init__(self, config_path):
@@ -45,7 +39,6 @@ class MemorizeConfig(object):
 
         # Build scenes from configuration and set them
         scene = self.configs.current.to_scene()
-        #_engine.switch_scene(scene)
 
     def on_exit(self):
         self.configs.current.save()
