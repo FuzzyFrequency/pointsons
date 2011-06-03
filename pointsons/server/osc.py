@@ -11,17 +11,26 @@
 #
 
 import mididings.engine as engine
+
 from mididings.extra.osc import OSCInterface
 from mididings.event import NoteOnEvent, NoteOffEvent
+from mididings.event import CtrlEvent, PitchbendEvent
 from mididings.util import note_number
 import liblo
 from liblo import make_method
 
 import settings
 
+from .scenes import context
+
 from ..configuration import Configurations
 
 class PointSonsOSCInterface(OSCInterface):
+    def __init__(self, *args, **kwargs):
+        OSCInterface.__init__(self, *args, **kwargs)
+
+        self.configs = Configurations()
+    
     #-- From UI Side
     @make_method('/pointsons/area', 'iii')
     def area(self, path, args):
@@ -42,10 +51,6 @@ class PointSonsOSCInterface(OSCInterface):
         configs = Configurations()
         configs.current.setup_kinect()
 
-    @make_method('/test', 'si')
-    def the_test(self, path, args):
-        print "test", path, args
-
     @make_method('/probability/sphere', 'siff')
     def sphere(self, path, args):
         """
@@ -65,32 +70,65 @@ class PointSonsOSCInterface(OSCInterface):
         
             engine._TheEngine().process(NoteOnEvent(engine.in_ports()[0], 1, note_number(note_name), 127))
 
-    @make_method('/probability/gesture', 'sifffff')
+    @make_method('/probability/gesture', 'sfffff')
     def one_hand_gesture(self, path, args):
-        print "got one hand gesture", path, args
-
-    @make_method('/probability/gesture', 'siffffffffff')
+        name = args[0]
+        if name == 'throwR':
+            print "Got THROWR"
+            engine._TheEngine().process(CtrlEvent(engine.in_ports()[0],
+                                                  settings.MIDI_HAMMER_CHANNEL, 
+                                                  1, # modwheel
+                                                  int(args[2]), # value
+                                                  )
+                                        )
+        else:
+            print "Got Unknown Gesture"
+                                            
+    @make_method('/probability/gesture', 'sffffffffff')
     def two_hands_gesture(self, path, args):
+        name = args[0]
+        if name == 'chord':
+            # proba, force, position (R, L)
+            print "Got Chord"
+            engine._TheEngine().process(PitchbendEvent(engine.in_ports()[0],
+                                                       1,
+                                                       1)
+                                        )
         print "got two hands gesture", path, args
 
     @make_method('/sphere/stop', 'sf')
     def sphere_stop(self, path, args):
-        print "stop sphere", args[0]
+        sphere_name = args[0]
+        print "stop sphere", sphere_name
+
+        note = None
+        for bowl in self.configs.current.bowls:
+            if bowl.note.label == sphere_name:
+                note = bowl.note.label
+                break
+
+        if note:
+            engine._TheEngine().process(NoteOnEvent(engine.in_ports()[0],
+                                                    settings.MIDI_DAMPER_CHANNEL,
+                                                    note,
+                                                    127)
+                                        )
+            print "sent stop", args
+
 
     @make_method('/stopall', '')
     def stopall(self, path, args):
-        print "stopall"
+        engine._TheEngine().process(CtrlEvent(engine.in_ports()[0],
+                                              settings.MIDI_DAMPER_CHANNEL,
+                                              123,
+                                              0)
+                                    )
 
     @make_method('/pointing/rh', 'sf')
     def right_hand_pointing(self, path, args):
         note_name = args[0]
         p = args[1]
         print "in !", args
-        if p < 1:
-            engine._TheEngine().process(NoteOffEvent(engine.in_ports()[0], 1, note_number(note_name), 127))
-        else:
-            engine._TheEngine().process(NoteOnEvent(engine.in_ports()[0], 1, note_number(note_name), 127))
-        # print "right hand pointing", path, args
 
     @make_method('/pointing/lh', 'sf')
     def left_hand_pointing(self, path, args):
@@ -98,5 +136,9 @@ class PointSonsOSCInterface(OSCInterface):
 
     @make_method('/activeuser', 'i')
     def activeuser(self, path, args):
-        print "active user", args
+        user_active = args[0]
+
+        if not user_active:
+            context['tonality'] = None
+            
 
