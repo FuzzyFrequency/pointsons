@@ -16,20 +16,24 @@ from mididings.extra.osc import OSCInterface
 from mididings.event import NoteOnEvent, NoteOffEvent
 from mididings.event import CtrlEvent, PitchbendEvent
 from mididings.util import note_number
-import liblo
+from mididings import engine
 from liblo import make_method
 
 import settings
-
+from ..configuration import Configurations
 from .scenes import context
 
-from ..configuration import Configurations
 
 class PointSonsOSCInterface(OSCInterface):
     def __init__(self, *args, **kwargs):
         OSCInterface.__init__(self, *args, **kwargs)
 
         self.configs = Configurations()
+
+
+    @make_method('/quit', '')
+    def quit_now(self, path, args):
+        engine.quit()
     
     #-- From UI Side
     @make_method('/pointsons/area', 'iii')

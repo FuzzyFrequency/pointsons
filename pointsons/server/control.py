@@ -10,7 +10,7 @@
 # (at your option) any later version.
 #
 
-from mididings import Transpose, Process, Filter, PROGRAM, Print, Scene
+from mididings import Process
 
 def debug(event):
     print "got event:", event
