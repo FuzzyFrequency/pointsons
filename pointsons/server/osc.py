@@ -9,18 +9,21 @@
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
-
+import math
+        
 import mididings.engine as engine
 
 from mididings.extra.osc import OSCInterface
 from mididings.event import NoteOnEvent, NoteOffEvent
-from mididings.event import CtrlEvent, PitchbendEvent
+from mididings.event import CtrlEvent, PitchbendEvent, AftertouchEvent
 from mididings.util import note_number
 from mididings import engine
+from mididings import AFTERTOUCH
 from liblo import make_method
 
 import settings
 from ..configuration import Configurations
+from ..constants import *
 from .scenes import context
 
 
@@ -65,14 +68,94 @@ class PointSonsOSCInterface(OSCInterface):
         hands = args[1]
         probability = args[2]
         force = args[3]
-        if probability > 0.5:
-            print "got sphere : %s '%s', %d, %f, %f" % (path, 
-                                                        note_name, 
-                                                        hands, 
-                                                        probability,
-                                                        force)
         
-            engine._TheEngine().process(NoteOnEvent(engine.in_ports()[0], 1, note_number(note_name), 127))
+        print "got sphere : %s '%s', %d, %f, %f" % (path, 
+                                                    note_name, 
+                                                    hands, 
+                                                    probability,
+                                                    force)
+
+        bowls = {'c2': (0, 127),
+                 'd2': (0, 127)}
+
+        speed_min = 0
+        speed_max = 1
+
+        try:
+            bowl_lower = bowls[note_name][0]
+            bowl_upper = bowls[note_name][1]
+        except KeyError:
+            bowl_lower = 0
+            bowl_upper = 127
+
+        bowl_range = bowl_upper - bowl_lower
+        step = float(speed_max) / bowl_range
+
+        print step, bowl_range
+        
+        midi_vel = int(min(math.ceil(bowl_lower + (float(force*force + 0.1) / step) + 5), 127))
+
+        print midi_vel
+        
+        engine._TheEngine().process(NoteOnEvent(engine.in_ports()[0],
+                                                1,
+                                                note_number(note_name),
+                                                midi_vel)
+                                    )
+
+    @make_method('/touch', 's')
+    def touch(self, path, args):
+        name = args[0]
+
+        if name == "head":
+            print "got head"
+            engine._TheEngine().process(AftertouchEvent(engine.in_ports()[0],
+                                                        settings.MIDI_HAMMER_CHANNEL,
+                                                        127)
+                                        )
+            
+
+    @make_method('/throw', 'isf')
+    def throw(self, path, args):
+        hand = args[0]
+        name = args[1]
+        force = args[2]
+
+        right_hand_evmap = {'dlur': GLIS_UP,
+                            'urdl': GLIS_DOWN,
+                            'rl': WHOLE_ALTERED,
+                            'lr': INSCALE_UP,
+                            }
+
+        left_hand_evmap = {#'dlur': LOWER_OCTAVE,
+                           #'urdl': UPPER_NORMAL,
+                           #'uldr': LOWER_NORMAL,
+                           #'drul': UPPER_ALTERED,
+                           'lr': WHOLE_NORMAL,
+                           'rl': INSCALE_DOWN,
+                           }
+
+        if hand == LEFT_HAND:
+            midi_event = left_hand_evmap[name]
+        elif hand == RIGHT_HAND:
+            midi_event = right_hand_evmap[name]
+        else:
+            midi_event = -1
+            print "PROBLEM !!"
+
+        step = 1.0 / 127
+        midi_vel = int(min(math.floor(float(force + 0.001) / step), 127))
+        
+        print ">>>>> throwing", name, force, midi_vel
+        
+        engine._TheEngine().process(CtrlEvent(engine.in_ports()[0],
+                                              settings.MIDI_HAMMER_CHANNEL, 
+                                              midi_event, # modwheel
+                                              midi_vel, # value
+                                              )
+                                    )
+
+        
 
     @make_method('/probability/gesture', 'sfffff')
     def one_hand_gesture(self, path, args):
@@ -81,8 +164,8 @@ class PointSonsOSCInterface(OSCInterface):
             print "Got THROWR"
             engine._TheEngine().process(CtrlEvent(engine.in_ports()[0],
                                                   settings.MIDI_HAMMER_CHANNEL, 
-                                                  1, # modwheel
-                                                  int(args[2]), # value
+                                                  LOWER_OCTAVE, # modwheel
+                                                  int(args[2])+20, # value
                                                   )
                                         )
         else:

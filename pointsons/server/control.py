@@ -13,7 +13,7 @@
 from mididings import Process
 
 def debug(event):
-    print "got event:", event
+    pass #print "got event:", event
 
 ps_control = Process(debug)
 
