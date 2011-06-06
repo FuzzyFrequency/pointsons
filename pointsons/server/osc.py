@@ -233,6 +233,8 @@ class PointSonsOSCInterface(OSCInterface):
     @make_method('/pointing/lh', 's')
     def left_hand_pointing(self, path, args):
         note = args[0]
+        if note == "":
+            note = "c2"
         engine._TheEngine().process(NoteOffEvent(engine.in_ports()[0],
                                                  settings.MIDI_REPEAT_CHANNEL,
                                                  note,

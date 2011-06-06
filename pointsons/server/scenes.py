@@ -193,8 +193,10 @@ def schedule_glissando(ev):
         try:
             tonic_idx = scale_whole_octave.index(tonic)
         except ValueError, e:
-            tonic += 1
-
+            if tonic is None:
+                tonic = 0
+            else:
+                tonic += 1
     try:
         scale_raf_up = [scale_whole_octave[tonic_idx],
                         scale_whole_octave[tonic_idx],
@@ -314,17 +316,17 @@ def schedule_repeat(anEvent):
     context['hold_repeat'] = True
 
 
-    def hit_tempo(note):
+    def hit_tempo(note, speed):
         while context['hold_repeat']:
             engine._TheEngine().process(NoteOnEvent(engine.in_ports()[0], 
                                                     settings.MIDI_HAMMER_CHANNEL, 
                                                     note, 
-                                                    127)
+                                                    95)
                                         )
-            time.sleep(1)
+            time.sleep(2-(speed*0.010))
         
 
-    d = Timer(0, hit_tempo, kwargs={'note': anEvent.note})
+    d = Timer(0, hit_tempo, kwargs={'note': anEvent.note, 'speed': anEvent.velocity})
 
     # FIXME: Threads may need to be collected !
     d.start()
