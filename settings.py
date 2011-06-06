@@ -19,6 +19,7 @@ KINECT_OSC_PORT = ('fresnoy.local', 56419) #('localhost', 56419)
 # Musical config
 MIDI_HAMMER_CHANNEL = 1
 MIDI_DAMPER_CHANNEL = 2
+MIDI_REPEAT_CHANNEL = 3
 BOWL_LOWER = 'c2'
 BOWL_UPPER = 'c4'
 

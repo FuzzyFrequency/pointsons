@@ -13,13 +13,14 @@ from threading import Timer, Lock
 import copy
 import math
 import time
+import random
 
 import mididings.engine as engine
 from mididings import KeyFilter, Discard, Scene, Filter, Channel, Transpose, Process, Call, Pass
 # Constants
 from mididings import NOTEON, NOTEOFF, AFTERTOUCH, CTRL, PITCHBEND
 # Filter
-from mididings.units.filters import CtrlFilter, ChannelFilter
+from mididings.units.filters import CtrlFilter, ChannelFilter, ProgramFilter
 # Events
 from mididings.event import NoteOnEvent, NoteOffEvent
 from mididings.util import note_number
@@ -41,7 +42,8 @@ context = {'latest_note': 48,
            'glissando_is_running': False,
            'chord_is_running': False,
            'history_is_running': False,
-           'inhib_hits': False}
+           'inhib_hits': False,
+           'hold_repeat': False}
 
 # Context modifiers
 def update_latest_note(anEvent):
@@ -88,7 +90,7 @@ def generate_chord(anEvent):
     # Calculate chord based on tonality and scale (may need to add
     # mode parameter)
     print "chords = ",
-    for shift in range(0, 3):
+    for shift in range(0, 2):
         print tonic+scale[shift*2],
         yield NoteOnEvent(anEvent.port,
                           anEvent.channel,
@@ -98,7 +100,7 @@ def generate_chord(anEvent):
 
     def reallow_chords():
         context['chord_is_running'] = False
-    d = Timer(0.5, reallow_chords)
+    d = Timer(0.8, reallow_chords)
 
     # FIXME: Threads may need to be collected !
     d.start()
@@ -123,8 +125,6 @@ generate_neighbours = [Transpose(-1), Transpose(1)]
 
 # glissando
 def schedule_glissando(ev):
-    import random
-
     context_lock.acquire()
     is_running = context['glissando_is_running']
     context_lock.release()
@@ -137,18 +137,20 @@ def schedule_glissando(ev):
         context['glissando_is_running'] = True
         context_lock.release()
 
-
     # speed of glissando
     velocity = ev.value
 
-    scale = ORIENTAL2_SCALE
+    if ev.ctrl in (LH_RAF_UP, LH_RAF_DOWN, LH_GLIS_UP, LH_GLIS_DOWN):
+        scale = HONG_MIN_SCALE
+    else:
+        scale = ORIENTAL2_SCALE
 
     tonic = context['latest_note']
 
     print "tonic is", tonic
-    if tonic >= note_number('c3') and ev.ctrl == GLIS_UP:
+    if tonic >= note_number('c3') and ev.ctrl in (LH_GLIS_UP, RH_GLIS_UP):
         tonic -= 12
-    if tonic < note_number('c3') and ev.ctrl == GLIS_DOWN:
+    if tonic < note_number('c3') and ev.ctrl in (LH_GLIS_DOWN, RH_GLIS_DOWN):
         tonic += 12
         
     note_range = range(tonic, note_number('c5'))
@@ -181,19 +183,46 @@ def schedule_glissando(ev):
     total_upper_altered = [total_upper_octave[offset] for offset in altered_mask]
     total_whole_altered = total_lower_altered + total_upper_altered
 
-    scale_up = [note_range[offset] for offset in scale]
+    scale_up = [note_range[offset] for offset in scale if offset < len(note_range)]
     scale_down = copy.copy(scale_up)
     scale_down.reverse()
 
+    # rafale
+    tonic_idx = None
+    while tonic_idx is None:
+        try:
+            tonic_idx = scale_whole_octave.index(tonic)
+        except ValueError, e:
+            tonic += 1
+
+    try:
+        scale_raf_up = [scale_whole_octave[tonic_idx],
+                        scale_whole_octave[tonic_idx],
+                        scale_whole_octave[tonic_idx+1],
+                        scale_whole_octave[tonic_idx],
+                        scale_whole_octave[tonic_idx+2]]
+    except Exception, e:
+        scale_raf_up = [scale_whole_octave[tonic_idx]]
+
+    scale_raf_down = copy.copy(scale_raf_up)
+    scale_raf_down.reverse()
+
+
     
-    #whole_altered = [note for note in note_range if not note in whole_normal]
-    #lower_altered = whole_altered[:5]
-    #upper_altered = whole_altered[5:]
+    # whole_altered = [note for note in note_range if not note in whole_normal]
+    # lower_altered = whole_altered[:5]
+    # upper_altered = whole_altered[5:]
 
 
-    notes_to_play = {GLIS_UP: scale_up,
-                     GLIS_DOWN: scale_down,
+    notes_to_play = {LH_GLIS_UP: scale_up,
+                     RH_GLIS_UP: scale_up,
+                     LH_GLIS_DOWN: scale_down,
+                     RH_GLIS_DOWN: scale_down,
                      WHOLE_NORMAL: total_whole_normal,
+                     LH_RAF_UP: scale_raf_up,
+                     RH_RAF_UP: scale_raf_up,
+                     LH_RAF_DOWN: scale_raf_down,
+                     RH_RAF_DOWN: scale_raf_down,
                      #LOWER_ALTERED: lower_altered,
                      #UPPER_ALTERED: upper_altered,
                      WHOLE_ALTERED: total_whole_altered,
@@ -235,7 +264,7 @@ def schedule_glissando(ev):
     d.start()
 
 
-glissando = ChannelFilter(settings.MIDI_HAMMER_CHANNEL) >> CtrlFilter([1,2,3,4,5,6,7,8,9]) >> Process(schedule_glissando)
+glissando = ChannelFilter(settings.MIDI_HAMMER_CHANNEL) >> CtrlFilter([1,2,3,4,5,6,7,8,9, 10, 11, 12, 13]) >> Process(schedule_glissando)
 
 
 # History
@@ -275,6 +304,43 @@ def schedule_history(ev):
     # FIXME: Threads may need to be collected !
     d.start()
 
+# repeat
+def schedule_repeat(anEvent):
+    print "sched repeat"
+    if context['hold_repeat']:
+        context['hold_repeat'] = False
+        return
+    
+    context['hold_repeat'] = True
+
+
+    def hit_tempo(note):
+        while context['hold_repeat']:
+            engine._TheEngine().process(NoteOnEvent(engine.in_ports()[0], 
+                                                    settings.MIDI_HAMMER_CHANNEL, 
+                                                    note, 
+                                                    127)
+                                        )
+            time.sleep(1)
+        
+
+    d = Timer(0, hit_tempo, kwargs={'note': anEvent.note})
+
+    # FIXME: Threads may need to be collected !
+    d.start()
+
+    return None
+
+def order_stop_repeat(anEvent):
+    context['hold_repeat'] = False
+
+    return None
+
+    
+
+repeat_hammer = ChannelFilter(settings.MIDI_REPEAT_CHANNEL) >> Process(schedule_repeat)
+
+stop_repeat = ChannelFilter(settings.MIDI_REPEAT_CHANNEL) >> Process(order_stop_repeat)
 
 
 # Stop an area
@@ -301,10 +367,58 @@ def schedule_desinhib(ev):
     d.start()
     return ev
 
+def alter_velocity(anEvent):
+    from mididings.util import note_name
+    bowls = {
+        'c2': (0, 127),
+        'c#2': (0, 127),
+        'd2': (0, 127),
+        'd#2': (0, 127),
+        'e2': (36, 127),
+        'f2': (45, 127),
+        'f#2': (32, 127),
+        'g2': (26, 127),
+        'g#2': (40, 127),
+        'a2': (25, 127),
+        'a#2': (27, 127),
+        'b2': (28, 127),
+        
+
+        'c3': (19, 59),
+        'c#3': (0, 59),
+        'd3': (17, 127),
+        'd#3': (47, 127),
+        'e3': (13, 59),
+        'f3': (1, 127),
+        'f#3': (33, 127),
+        'g3': (9, 127),
+        'g#3': (0, 127),
+        'a3': (35, 127),
+        'a#3': (10, 127),
+        'b3': (25, 127)
+        }
+
+
+    try:
+        bowl_lower = bowls[note_name(anEvent.note)][0]
+        bowl_upper = bowls[note_name(anEvent.note)][1]
+    except KeyError:
+        bowl_lower = 0
+        bowl_upper = 127
+        
+    bowl_range = bowl_upper - bowl_lower
+    step = bowl_range / 127.0
+
+    #    midi_vel = int(min(math.ceil(bowl_lower + (float(force*force + 0.1) / step) + 5), 127))
+    anEvent.velocity = int(bowl_lower + (step * anEvent.velocity))
+
+    return anEvent
+
+
 area_stop = [generate_neighbours, Pass()] >> Call(schedule_dampers_release) >> to_dampers
 
 # Bowls
-hammer_activate = ChannelFilter(settings.MIDI_HAMMER_CHANNEL) >> Process(update_latest_note) >> Process(update_history) >> to_hammers
+hammer_activate = ChannelFilter(settings.MIDI_HAMMER_CHANNEL) >> Process(alter_velocity) >> Process(update_latest_note) >> Process(update_history) >> to_hammers
 damper_activate = ChannelFilter(settings.MIDI_DAMPER_CHANNEL) >> area_stop
 damper_release = ChannelFilter(settings.MIDI_DAMPER_CHANNEL) >> to_dampers
 
@@ -316,13 +430,16 @@ stop_all = ChannelFilter(settings.MIDI_DAMPER_CHANNEL) >> CtrlFilter(123) >> Pro
 chord = Process(generate_chord) >> Process(update_history) >> to_hammers
 
 
-noteon_router = hammer_activate // damper_activate
+noteon_router = [hammer_activate, damper_activate, repeat_hammer]
+noteoff_router = [damper_release, stop_repeat]
 ctrl_router =  Filter(CTRL) >> (stop_all // glissando)
 
+# History
 play_history = Process(schedule_history) >> Discard()
 
 def inhib_if_necessary(anEvent):
-    if context['inhib_hits'] and anEvent.channel == settings.MIDI_HAMMER_CHANNEL:
+    if context['inhib_hits'] and anEvent.channel in (settings.MIDI_HAMMER_CHANNEL,
+                                                     settings.MIDI_REPEAT_CHANNEL):
         print "!!!!!events inhibed!!!!!"
         return None
     else:
@@ -331,7 +448,7 @@ def inhib_if_necessary(anEvent):
 # Main scene
 public_router = Process(inhib_if_necessary) >> {
     NOTEON: noteon_router,
-    NOTEOFF: damper_release,
+    NOTEOFF: noteoff_router,
     CTRL: ctrl_router,
     PITCHBEND: chord,
     AFTERTOUCH: play_history,
