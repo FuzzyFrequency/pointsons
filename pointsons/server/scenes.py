@@ -65,6 +65,7 @@ def update_history(anEvent):
 # Inhib hits
 def inhib_hits(anEvent):
     context['inhib_hits'] = True
+    context['hold_repeat'] = False
     return anEvent
 
 def desinhib_hits(anEvent=None):
@@ -147,87 +148,125 @@ def schedule_glissando(ev):
 
     tonic = context['latest_note']
 
-    print "tonic is", tonic
-    if tonic >= note_number('c3') and ev.ctrl in (LH_GLIS_UP, RH_GLIS_UP):
-        tonic -= 12
-    if tonic < note_number('c3') and ev.ctrl in (LH_GLIS_DOWN, RH_GLIS_DOWN):
-        tonic += 12
-        
-    note_range = range(tonic, note_number('c5'))
-
-
-    # Scaleless
-    total_lower_octave = range(note_number('c2'), note_number('c3'))
-    total_upper_octave = range(note_number('c3'), note_number('c4'))
-    total_whole_octave = total_lower_octave + total_lower_octave
-
-    # In-scale
-    scale_lower_octave = [total_lower_octave[offset] for offset in scale]
-    scale_upper_octave = [total_upper_octave[offset] for offset in scale]
-    scale_whole_octave = scale_lower_octave + scale_upper_octave
-    
-    scale_whole_octave_reversed = copy.copy(scale_whole_octave)
-    scale_whole_octave_reversed.reverse()
-
-    # Normal mask
-    normal_mask = [0, 2, 4, 5, 7, 9, 11]
-    altered_mask = [1, 3, 6, 8, 10]
-
-    # Scaleless, normal
-    total_lower_normal = [total_lower_octave[offset] for offset in normal_mask]
-    total_upper_normal = [total_upper_octave[offset] for offset in normal_mask]
-    total_whole_normal = total_lower_normal + total_upper_normal
-
-    # Scaleless, altered
-    total_lower_altered = [total_lower_octave[offset] for offset in altered_mask]
-    total_upper_altered = [total_upper_octave[offset] for offset in altered_mask]
-    total_whole_altered = total_lower_altered + total_upper_altered
-
-    scale_up = [note_range[offset] for offset in scale if offset < len(note_range)]
-    scale_down = copy.copy(scale_up)
-    scale_down.reverse()
-
-    # rafale
-    tonic_idx = None
-    while tonic_idx is None:
-        try:
-            tonic_idx = scale_whole_octave.index(tonic)
-        except ValueError, e:
-            if tonic is None:
-                tonic = 0
-            else:
-                tonic += 1
     try:
-        scale_raf_up = [scale_whole_octave[tonic_idx],
-                        scale_whole_octave[tonic_idx],
-                        scale_whole_octave[tonic_idx+1],
-                        scale_whole_octave[tonic_idx],
-                        scale_whole_octave[tonic_idx+2]]
-    except Exception, e:
-        scale_raf_up = [scale_whole_octave[tonic_idx]]
 
-    scale_raf_down = copy.copy(scale_raf_up)
-    scale_raf_down.reverse()
+        print "tonic is", tonic
+        if tonic >= note_number('c3') and ev.ctrl in (LH_GLIS_UP, RH_GLIS_UP):
+            tonic -= 12
+        if tonic < note_number('c3') and ev.ctrl in (LH_GLIS_DOWN, RH_GLIS_DOWN):
+            tonic += 12
 
+        note_range = range(tonic, note_number('c5'))
+        
+        
+        # Scaleless
+        total_lower_octave = range(note_number('c2'), note_number('c3'))
+        total_upper_octave = range(note_number('c3'), note_number('c4'))
+        total_whole_octave = total_lower_octave + total_lower_octave
 
+        # In-scale
+        scale_lower_octave = [total_lower_octave[offset] for offset in scale]
+        scale_upper_octave = [total_upper_octave[offset] for offset in scale]
+        scale_whole_octave = scale_lower_octave + scale_upper_octave
+        
+        scale_whole_octave_reversed = copy.copy(scale_whole_octave)
+        scale_whole_octave_reversed.reverse()
+
+        # Normal mask
+        normal_mask = [0, 2, 4, 5, 7, 9, 11]
+        altered_mask = [1, 3, 6, 8, 10]
+
+        # Scaleless, normal
+        total_lower_normal = [total_lower_octave[offset] for offset in normal_mask]
+        total_upper_normal = [total_upper_octave[offset] for offset in normal_mask]
+        total_whole_normal = total_lower_normal + total_upper_normal
+        
+        # Scaleless, altered
+        total_lower_altered = [total_lower_octave[offset] for offset in altered_mask]
+        total_upper_altered = [total_upper_octave[offset] for offset in altered_mask]
+        total_whole_altered = total_lower_altered + total_upper_altered
+        
+        scale_up = [note_range[offset] for offset in scale if offset < len(note_range)]
+        scale_down = copy.copy(scale_up)
+        scale_down.reverse()
+
+        # rafale
+        tonic_idx = None
+        limit = 0
+        while tonic_idx is None:
+            limit +=1
+            try:
+                tonic_idx = scale_whole_octave.index(tonic)
+            except ValueError, e:
+                if tonic is None:
+                    tonic = 0
+                else:
+                    tonic += 1
+            if limit >= len(scale_whole_octave):
+                print "BUG: BREAK"
+                tonic_idx = 0
+                break
     
-    # whole_altered = [note for note in note_range if not note in whole_normal]
-    # lower_altered = whole_altered[:5]
-    # upper_altered = whole_altered[5:]
+        try:
+            scale_raf_up = [scale_whole_octave[tonic_idx],
+                            scale_whole_octave[tonic_idx],
+                            scale_whole_octave[tonic_idx+1],
+                            scale_whole_octave[tonic_idx],
+                            scale_whole_octave[tonic_idx+2]]
+        except Exception, e:
+            scale_raf_up = [scale_whole_octave[tonic_idx]]
 
+        scale_raf_down = copy.copy(scale_raf_up)
+        scale_raf_down.reverse()
+        
+        
+        
+        # whole_altered = [note for note in note_range if not note in whole_normal]
+        # lower_altered = whole_altered[:5]
+        # upper_altered = whole_altered[5:]
+        
+        new_raf_up = [scale_whole_octave[tonic_idx]]
+        for i in range(2, 6, 2):
+            try:
+                new_raf_up.append(scale_whole_octave[tonic_idx+i])
+            except Exception:
+                break
 
+        new_raf_up = new_raf_up + new_raf_up
+        
+        
+        new_raf_down = [scale_whole_octave[tonic_idx]]
+        for i in range(2, 6, 2):
+            try:
+                new_raf_down.append(scale_whole_octave[tonic_idx-i])
+            except Exception:
+                break
+            
+        new_raf_down = new_raf_down + new_raf_down
+
+        print "new raf is", new_raf_up
+
+        # scale_whole_octave[tonic_idx],
+        #    scale_whole_octave[tonic_idx+2],
+        #    scale_whole_octave[tonic_idx+4]]
+    except Exception:
+        print "glissando failure"
+        context['glissando_is_running'] = False
+        return
+        
+        
     notes_to_play = {LH_GLIS_UP: scale_up,
                      RH_GLIS_UP: scale_up,
                      LH_GLIS_DOWN: scale_down,
                      RH_GLIS_DOWN: scale_down,
-                     WHOLE_NORMAL: total_whole_normal,
+                     WHOLE_NORMAL: new_raf_down,
                      LH_RAF_UP: scale_raf_up,
                      RH_RAF_UP: scale_raf_up,
                      LH_RAF_DOWN: scale_raf_down,
                      RH_RAF_DOWN: scale_raf_down,
                      #LOWER_ALTERED: lower_altered,
                      #UPPER_ALTERED: upper_altered,
-                     WHOLE_ALTERED: total_whole_altered,
+                     WHOLE_ALTERED: new_raf_up,
                      #LOWER_OCTAVE: lower_octave,
                      #UPPER_OCTAVE: upper_octave,
                      #WHOLE_OCTAVE: whole_octave,
@@ -251,7 +290,7 @@ def schedule_glissando(ev):
 
             sleep_min = 0.012
             sleep_max = 0.216
-            sleep_time = max(sleep_max - (math.log10(max(velocity, 1))  / 11.75), sleep_min)
+            sleep_time = max(sleep_max - (math.log10(max(velocity, 1))  / 20.), sleep_min)
             time.sleep(sleep_time)
             
         context_lock.acquire()
@@ -323,7 +362,7 @@ def schedule_repeat(anEvent):
                                                     note, 
                                                     95)
                                         )
-            time.sleep(2-(speed*0.010))
+            time.sleep(1.35-(speed*0.010))
         
 
     d = Timer(0, hit_tempo, kwargs={'note': anEvent.note, 'speed': anEvent.velocity})
@@ -372,10 +411,10 @@ def schedule_desinhib(ev):
 def alter_velocity(anEvent):
     from mididings.util import note_name
     bowls = {
-        'c2': (0, 127),
-        'c#2': (0, 127),
-        'd2': (0, 127),
-        'd#2': (0, 127),
+        'c2': (22, 127),
+        'c#2': (22, 127),
+        'd2': (22, 127),
+        'd#2': (22, 127),
         'e2': (36, 127),
         'f2': (45, 127),
         'f#2': (32, 127),

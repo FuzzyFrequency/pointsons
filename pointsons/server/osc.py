@@ -246,6 +246,13 @@ class PointSonsOSCInterface(OSCInterface):
         user_active = args[0]
 
         if not user_active:
+            print "reinit"
+            context['history'] = []
             context['tonality'] = None
+            context['hold_repeat'] = False
+            context['glissando_is_running'] = False
+            context['chord_is_running'] = False
+            context['history_is_running'] = False
+            context['inhib_hibts'] = False
             
 
